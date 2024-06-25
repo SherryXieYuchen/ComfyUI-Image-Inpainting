@@ -279,7 +279,7 @@ class LoadModel:
         return (model,)
 
 
-class InpaintWithModel:
+class InpaintingWithModel:
     @classmethod
     def INPUT_TYPES(s):
         return {
