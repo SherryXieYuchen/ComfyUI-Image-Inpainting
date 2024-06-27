@@ -230,7 +230,7 @@ class ImagePostprocess:
 
     def rescale(self, model_name, image, image_max_length, upscale_method):
         upscale_model = self.load_model(model_name)
-        upscale_image = self.rescale(upscale_model, image)
+        upscale_image = self.upscale(upscale_model, image)
         upscale_samples = upscale_image.movedim(-1, 1)
         scale = image_max_length / max(upscale_samples.shape[2], upscale_samples.shape[3])
         width = round(upscale_samples.shape[3] * scale)
