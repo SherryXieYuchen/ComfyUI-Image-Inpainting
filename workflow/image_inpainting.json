@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "image": "000014.png",
+      "image": "000014 (2).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -11,8 +11,8 @@
   },
   "3": {
     "inputs": {
-      "image": "example.png",
-      "channel": "alpha",
+      "image": "000014_mask (1).png",
+      "channel": "red",
       "upload": "image"
     },
     "class_type": "LoadImageMask",
@@ -73,7 +73,7 @@
   },
   "12": {
     "inputs": {
-      "seed": 826209279514587,
+      "seed": 51204094622639,
       "inpaint_model": [
         "13",
         0
@@ -237,7 +237,7 @@
   },
   "23": {
     "inputs": {
-      "seed": 289644436556879,
+      "seed": 312534331313782,
       "steps": 10,
       "cfg": 5,
       "sampler_name": "dpmpp_sde_gpu",
