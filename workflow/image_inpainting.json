@@ -1,0 +1,368 @@
+{
+  "1": {
+    "inputs": {
+      "image": "000014.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "3": {
+    "inputs": {
+      "image": "example.png",
+      "channel": "alpha",
+      "upload": "image"
+    },
+    "class_type": "LoadImageMask",
+    "_meta": {
+      "title": "Load Image (as Mask)"
+    }
+  },
+  "5": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "image": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "ImagePreprocess",
+    "_meta": {
+      "title": "ImagePreprocess Inpaint"
+    }
+  },
+  "8": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "image": [
+        "9",
+        0
+      ]
+    },
+    "class_type": "ImagePreprocess",
+    "_meta": {
+      "title": "ImagePreprocess Inpaint"
+    }
+  },
+  "9": {
+    "inputs": {
+      "mask": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "MaskToImage",
+    "_meta": {
+      "title": "Convert Mask to Image"
+    }
+  },
+  "10": {
+    "inputs": {
+      "channel": "red",
+      "image": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "ImageToMask",
+    "_meta": {
+      "title": "Convert Image to Mask"
+    }
+  },
+  "12": {
+    "inputs": {
+      "seed": 826209279514587,
+      "inpaint_model": [
+        "13",
+        0
+      ],
+      "image": [
+        "5",
+        0
+      ],
+      "mask": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "INPAINT_InpaintingWithModel",
+    "_meta": {
+      "title": "Inpainting (using Model)"
+    }
+  },
+  "13": {
+    "inputs": {
+      "model_name": "big-lama.pt"
+    },
+    "class_type": "INPAINT_LoadModel",
+    "_meta": {
+      "title": "Load Model Inpaint"
+    }
+  },
+  "14": {
+    "inputs": {
+      "resolution": 512,
+      "image": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "Zoe-DepthMapPreprocessor",
+    "_meta": {
+      "title": "Zoe Depth Map"
+    }
+  },
+  "15": {
+    "inputs": {
+      "grow_mask_by": 20,
+      "pixels": [
+        "5",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ],
+      "mask": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "INPAINT_VAEEncode",
+    "_meta": {
+      "title": "VAE Encode Inpaint"
+    }
+  },
+  "16": {
+    "inputs": {
+      "samples": [
+        "23",
+        0
+      ],
+      "vae": [
+        "20",
+        2
+      ],
+      "pixels": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "INPAINT_VAEDecode",
+    "_meta": {
+      "title": "VAE Decode Inpaint"
+    }
+  },
+  "17": {
+    "inputs": {
+      "vae_name": "Realistic_Vision_V3.0-inpating-vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "18": {
+    "inputs": {
+      "text": "background, empty scene",
+      "clip": [
+        "20",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "19": {
+    "inputs": {
+      "text": "man, woman, (((human))), blur, text, watermark, nsfw, confusion",
+      "clip": [
+        "20",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "20": {
+    "inputs": {
+      "ckpt_name": "Realistic_Vision_V3.0-inpainting.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "21": {
+    "inputs": {
+      "strength": 0.5,
+      "start_percent": 0,
+      "end_percent": 1,
+      "positive": [
+        "18",
+        0
+      ],
+      "negative": [
+        "19",
+        0
+      ],
+      "control_net": [
+        "22",
+        0
+      ],
+      "image": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet (Advanced)"
+    }
+  },
+  "22": {
+    "inputs": {
+      "control_net_name": "control_v11f1p_sd15_depth.pth"
+    },
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "Load ControlNet Model"
+    }
+  },
+  "23": {
+    "inputs": {
+      "seed": 289644436556879,
+      "steps": 10,
+      "cfg": 5,
+      "sampler_name": "dpmpp_sde_gpu",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": [
+        "20",
+        0
+      ],
+      "positive": [
+        "21",
+        0
+      ],
+      "negative": [
+        "21",
+        1
+      ],
+      "latent_image": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "24": {
+    "inputs": {
+      "factor": 1,
+      "image": [
+        "16",
+        0
+      ],
+      "reference": [
+        "5",
+        0
+      ],
+      "mask": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "INPAINT_ColorCorrection",
+    "_meta": {
+      "title": "ColorCorrection Inpaint"
+    }
+  },
+  "25": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "input_image": [
+        "1",
+        0
+      ],
+      "output_image": [
+        "24",
+        0
+      ]
+    },
+    "class_type": "ImagePostprocess",
+    "_meta": {
+      "title": "ImagePostprocess Inpaint"
+    }
+  },
+  "26": {
+    "inputs": {
+      "x": 0,
+      "y": 0,
+      "resize_source": false,
+      "destination": [
+        "1",
+        0
+      ],
+      "source": [
+        "25",
+        0
+      ],
+      "mask": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "ImageCompositeMasked",
+    "_meta": {
+      "title": "ImageCompositeMasked"
+    }
+  },
+  "27": {
+    "inputs": {
+      "dilation": 15,
+      "mask": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "ImpactDilateMask",
+    "_meta": {
+      "title": "Dilate Mask"
+    }
+  },
+  "28": {
+    "inputs": {
+      "kernel_size": 10,
+      "sigma": 10,
+      "mask": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "ImpactGaussianBlurMask",
+    "_meta": {
+      "title": "Gaussian Blur Mask"
+    }
+  },
+  "29": {
+    "inputs": {
+      "images": [
+        "26",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "SaveImageWebsocket"
+    }
+  }
+}
