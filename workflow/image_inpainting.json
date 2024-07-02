@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "image": "000014 (2).png",
+      "image": "000016 (6).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -11,7 +11,7 @@
   },
   "3": {
     "inputs": {
-      "image": "000014_mask (1).png",
+      "image": "000007_mask.png",
       "channel": "red",
       "upload": "image"
     },
@@ -22,7 +22,7 @@
   },
   "5": {
     "inputs": {
-      "upscale_method": "lanczos",
+      "max_length": 800,
       "image": [
         "1",
         0
@@ -35,7 +35,7 @@
   },
   "8": {
     "inputs": {
-      "upscale_method": "lanczos",
+      "max_length": 800,
       "image": [
         "9",
         0
@@ -73,7 +73,7 @@
   },
   "12": {
     "inputs": {
-      "seed": 51204094622639,
+      "seed": 60333884295653,
       "inpaint_model": [
         "13",
         0
@@ -142,8 +142,8 @@
         0
       ],
       "vae": [
-        "20",
-        2
+        "17",
+        0
       ],
       "pixels": [
         "5",
@@ -157,7 +157,7 @@
   },
   "17": {
     "inputs": {
-      "vae_name": "Realistic_Vision_V3.0-inpating-vae.safetensors"
+      "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
     },
     "class_type": "VAELoader",
     "_meta": {
@@ -168,7 +168,7 @@
     "inputs": {
       "text": "background, empty scene",
       "clip": [
-        "20",
+        "44",
         1
       ]
     },
@@ -181,7 +181,7 @@
     "inputs": {
       "text": "man, woman, (((human))), blur, text, watermark, nsfw, confusion",
       "clip": [
-        "20",
+        "44",
         1
       ]
     },
@@ -192,7 +192,7 @@
   },
   "20": {
     "inputs": {
-      "ckpt_name": "Realistic_Vision_V3.0-inpainting.safetensors"
+      "ckpt_name": "stable-diffusion-inpainting/sd-v1-5-inpainting.ckpt"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -201,7 +201,7 @@
   },
   "21": {
     "inputs": {
-      "strength": 0.5,
+      "strength": 1,
       "start_percent": 0,
       "end_percent": 1,
       "positive": [
@@ -237,14 +237,14 @@
   },
   "23": {
     "inputs": {
-      "seed": 312534331313782,
-      "steps": 10,
+      "seed": 356805744097970,
+      "steps": 4,
       "cfg": 5,
       "sampler_name": "dpmpp_sde_gpu",
       "scheduler": "karras",
       "denoise": 1,
       "model": [
-        "20",
+        "44",
         0
       ],
       "positive": [
@@ -288,7 +288,7 @@
   },
   "25": {
     "inputs": {
-      "upscale_method": "lanczos",
+      "max_length": 800,
       "input_image": [
         "1",
         0
@@ -363,6 +363,25 @@
     "class_type": "SaveImageWebsocket",
     "_meta": {
       "title": "SaveImageWebsocket"
+    }
+  },
+  "44": {
+    "inputs": {
+      "lora_name": "pytorch_lora_weights.safetensors",
+      "strength_model": 0.8,
+      "strength_clip": 0.5,
+      "model": [
+        "20",
+        0
+      ],
+      "clip": [
+        "20",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
     }
   }
 }

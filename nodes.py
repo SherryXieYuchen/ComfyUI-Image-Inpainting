@@ -1,6 +1,7 @@
 import torch
 import copy
 import math
+import cv2
 from spandrel import ModelLoader, ImageModelDescriptor
 from torch import Tensor
 from tqdm import trange
@@ -141,41 +142,44 @@ class ColorCorrection:
 
 
 class ImagePreprocess:
-    upscale_methods = ["nearest-exact", "bilinear", "area", "bicubic", "lanczos"]
-
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"image": ("IMAGE",),
-                             "upscale_method": (s.upscale_methods,), }}
+                             "max_length": ("INT", {"default": 1024, "min": 512, "max": 1024, "step": 8}), }}
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "image_preprocess"
 
     CATEGORY = "image/transform"
 
-    def image_preprocess(self, image, upscale_method):
+    def image_preprocess(self, image, max_length):
         samples = image.movedim(-1, 1)
         d1, d2, d3, d4 = samples.size()
         image_max_length = max(d3, d4)
-        if image_max_length <= 1024:
+        if image_max_length <= max_length:
             s = samples.movedim(1, -1)
         else:
-            scale = 1024 / image_max_length
+            scale = max_length / image_max_length
             width = round(samples.shape[3] * scale)
             height = round(samples.shape[2] * scale)
-            s = comfy.utils.common_upscale(samples, width, height, upscale_method, "disabled")
+
+            samples_numpy = samples.squeeze(0).detach().numpy().transpose(1, 2, 0)
+            samples_numpy = cv2.resize(samples_numpy, (width, height), cv2.INTER_LANCZOS4)
+            s = torch.tensor(samples_numpy.transpose(2, 0, 1)).unsqueeze(0)
             s = s.movedim(1, -1)
         return (s,)
 
 
 class ImagePostprocess:
-    upscale_methods = ["nearest-exact", "bilinear", "area", "bicubic", "lanczos"]
+    def __init__(self) -> None:
+        self.upscale_2x_model = self.load_model('RealESRGAN_x2plus.pth')
+        self.upscale_4x_model = self.load_model('RealESRGAN_x4plus.pth')
 
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"input_image": ("IMAGE",),
                              "output_image": ("IMAGE",),
-                             "upscale_method": (s.upscale_methods,), }}
+                             "max_length": ("INT", {"default": 1024, "min": 512, "max": 1024, "step": 8}), }}
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "image_postprocess"
@@ -228,28 +232,26 @@ class ImagePostprocess:
         s = torch.clamp(s.movedim(-3, -1), min=0, max=1.0)
         return s
 
-    def rescale(self, model_name, image, image_max_length, upscale_method):
-        upscale_model = self.load_model(model_name)
+    def rescale(self, upscale_model, image, image_max_length):
         upscale_image = self.upscale(upscale_model, image)
         upscale_samples = upscale_image.movedim(-1, 1)
         scale = image_max_length / max(upscale_samples.shape[2], upscale_samples.shape[3])
         width = round(upscale_samples.shape[3] * scale)
         height = round(upscale_samples.shape[2] * scale)
-        s = comfy.utils.common_upscale(upscale_samples, width, height, upscale_method, "disabled")
+        upscale_samples_numpy = upscale_samples.squeeze(0).detach().numpy().transpose(1, 2, 0)
+        upscale_samples_numpy = cv2.resize(upscale_samples_numpy, (width, height), cv2.INTER_LANCZOS4)
+        s = torch.tensor(upscale_samples_numpy.transpose(2, 0, 1)).unsqueeze(0)
         s = s.movedim(1, -1)
         return s
 
-    def image_postprocess(self, input_image, output_image, upscale_method):
+    def image_postprocess(self, input_image, output_image, max_length):
         samples = input_image.movedim(-1, 1)
         d1, d2, d3, d4 = samples.size()
         image_max_length = max(d3, d4)
-        if image_max_length <= 1024:
+        if image_max_length <= max_length:
             s = output_image
-        elif 1024 < image_max_length <= 2048:
-            s = self.rescale('RealESRGAN_x2plus.pth', output_image, image_max_length, upscale_method)
-        elif image_max_length > 2048:
-            s = self.rescale('RealESRGAN_x4plus.pth', output_image, image_max_length, upscale_method)
-
+        elif image_max_length > max_length:
+            s = self.rescale(self.upscale_2x_model, output_image, image_max_length)
         return (s,)
 
 
@@ -305,7 +307,7 @@ class InpaintingWithModel:
         mask: Tensor,
         seed: int,
         optional_upscale_model=None,
-    ):
+    ):  
         if inpaint_model.architecture.id == "LaMa":
             required_size = 1024
         else:
