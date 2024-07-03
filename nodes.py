@@ -5,6 +5,7 @@ import cv2
 from spandrel import ModelLoader, ImageModelDescriptor
 from torch import Tensor
 from tqdm import trange
+import numpy as np
 
 import folder_paths
 import comfy.utils
@@ -173,7 +174,8 @@ class ImagePreprocess:
 class ImagePostprocess:
     def __init__(self) -> None:
         self.upscale_2x_model = self.load_model('RealESRGAN_x2plus.pth')
-        self.upscale_4x_model = self.load_model('RealESRGAN_x4plus.pth')
+        # self.upscale_4x_model = self.load_model('RealESRGAN_x4plus.pth')
+        # self.upscale_tiny_model = self.load_model('realesr-general-x4v3.pth')
 
     @classmethod
     def INPUT_TYPES(s):
@@ -307,7 +309,7 @@ class InpaintingWithModel:
         mask: Tensor,
         seed: int,
         optional_upscale_model=None,
-    ):  
+    ):
         if inpaint_model.architecture.id == "LaMa":
             required_size = 1024
         else:
@@ -354,4 +356,105 @@ class InpaintingWithModel:
         inpaint_model.cpu()
         result = torch.cat(batch_image, dim=0)
         return (to_comfy(result),)
+
+
+class CropImage:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "mask": ("MASK",),
+                "pad_ratio": ("FLOAT", {"default": 0.1, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.01}),
+            }
+        }
+    RETURN_TYPES = ("IMAGE", "MASK", "RECT", )
+    CATEGORY = "image"
+    FUNCTION = "crop_image"
+
+    def crop_image(self, image, mask, pad_ratio):
+        image_sample = image.movedim(-1, 1)
+        image_numpy = image_sample.squeeze(0).detach().numpy().transpose(1, 2, 0)
+        mask_numpy = (mask * 255).squeeze(0).detach().numpy().astype(np.uint8)
+        
+        contours, _ = cv2.findContours(mask_numpy, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contour = []
+        for cont in contours:
+            contour.extend(cont)
+        x, y, w, h = cv2.boundingRect(np.array(contour))
+        
+        # padding
+        x_pad = int(w * pad_ratio // 2)
+        y_pad = int(h * pad_ratio // 2)
+        x_min = x - x_pad if x - x_pad > 0 else 0
+        x_max = x + w + x_pad if x + w + x_pad < image_numpy.shape[1] else image_numpy.shape[1]
+        y_min = y - y_pad if y - y_pad > 0 else 0
+        y_max = y + h + y_pad if y + h + y_pad < image_numpy.shape[0] else image_numpy.shape[0]
+        rect = (x_min, y_min, x_max, y_max)
+
+        image_crop_numpy = image_numpy[y_min:y_max, x_min:x_max]
+        image_crop = torch.tensor(image_crop_numpy.transpose(2, 0, 1)).unsqueeze(0)
+        image_crop = image_crop.movedim(1, -1)
+
+        mask_crop_numpy = mask_numpy[y_min:y_max, x_min:x_max]
+        mask_crop = torch.tensor(mask_crop_numpy.astype(np.float32)).unsqueeze(0) / 255.0
+
+        return (image_crop, mask_crop, rect, )
+
+
+class CropImageByRect:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "original_image" : ("IMAGE",),
+                "image": ("IMAGE",),
+                "rect": ("RECT",),
+            }
+        }
+    RETURN_TYPES = ("IMAGE", )
+    CATEGORY = "image"
+    FUNCTION = "crop_image"
+    
+    def crop_image(self, original_image, image, rect):
+        x_min, y_min, x_max, y_max = rect
+        image_sample = image.movedim(-1, 1)
+        image_numpy = image_sample.squeeze(0).detach().numpy().transpose(1, 2, 0)
+
+        image_numpy = cv2.resize(image_numpy, (original_image.shape[2], original_image.shape[1]))
+        image_crop_numpy = image_numpy[y_min:y_max, x_min:x_max]
+        image_crop = torch.tensor(image_crop_numpy.transpose(2, 0, 1)).unsqueeze(0)
+        image_crop = image_crop.movedim(1, -1)
+
+        return (image_crop, )
+
+
+class PasteBackCropImage:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "crop_image": ("IMAGE",),
+                "rect": ("RECT",),
+            }
+        }
+    RETURN_TYPES = ("IMAGE", )
+    CATEGORY = "image"
+    FUNCTION = "paste_back_crop_image"
+
+    def paste_back_crop_image(self, image, crop_image, rect):
+        image_sample = image.movedim(-1, 1)
+        image_numpy = image_sample.squeeze(0).detach().numpy().transpose(1, 2, 0)
+
+        crop_image_sample = crop_image.movedim(-1, 1)
+        crop_image_numpy = crop_image_sample.squeeze(0).detach().numpy().transpose(1, 2, 0)
+
+        x_min, y_min, x_max, y_max = rect
+        image_numpy[y_min:y_max, x_min:x_max] = crop_image_numpy
+        image_update = torch.tensor(image_numpy.transpose(2, 0, 1)).unsqueeze(0)
+        image_update = image_update.movedim(1, -1)
+
+        return (image_update, )
+
 

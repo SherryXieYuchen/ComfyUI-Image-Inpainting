@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "image": "000016 (6).png",
+      "image": "000012 (3).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -22,9 +22,9 @@
   },
   "5": {
     "inputs": {
-      "max_length": 800,
+      "max_length": 768,
       "image": [
-        "1",
+        "62",
         0
       ]
     },
@@ -35,7 +35,7 @@
   },
   "8": {
     "inputs": {
-      "max_length": 800,
+      "max_length": 768,
       "image": [
         "9",
         0
@@ -49,8 +49,8 @@
   "9": {
     "inputs": {
       "mask": [
-        "3",
-        0
+        "62",
+        1
       ]
     },
     "class_type": "MaskToImage",
@@ -73,17 +73,17 @@
   },
   "12": {
     "inputs": {
-      "seed": 60333884295653,
+      "seed": 223358464508711,
       "inpaint_model": [
         "13",
         0
       ],
       "image": [
-        "5",
+        "1",
         0
       ],
       "mask": [
-        "10",
+        "3",
         0
       ]
     },
@@ -201,7 +201,7 @@
   },
   "21": {
     "inputs": {
-      "strength": 1,
+      "strength": 0.8,
       "start_percent": 0,
       "end_percent": 1,
       "positive": [
@@ -217,7 +217,7 @@
         0
       ],
       "image": [
-        "14",
+        "69",
         0
       ]
     },
@@ -237,9 +237,9 @@
   },
   "23": {
     "inputs": {
-      "seed": 356805744097970,
+      "seed": 835629437992385,
       "steps": 4,
-      "cfg": 5,
+      "cfg": 3,
       "sampler_name": "dpmpp_sde_gpu",
       "scheduler": "karras",
       "denoise": 1,
@@ -288,9 +288,9 @@
   },
   "25": {
     "inputs": {
-      "max_length": 800,
+      "max_length": 768,
       "input_image": [
-        "1",
+        "62",
         0
       ],
       "output_image": [
@@ -309,7 +309,7 @@
       "y": 0,
       "resize_source": false,
       "destination": [
-        "1",
+        "62",
         0
       ],
       "source": [
@@ -330,7 +330,7 @@
     "inputs": {
       "dilation": 15,
       "mask": [
-        "3",
+        "10",
         0
       ]
     },
@@ -353,23 +353,11 @@
       "title": "Gaussian Blur Mask"
     }
   },
-  "29": {
-    "inputs": {
-      "images": [
-        "26",
-        0
-      ]
-    },
-    "class_type": "SaveImageWebsocket",
-    "_meta": {
-      "title": "SaveImageWebsocket"
-    }
-  },
   "44": {
     "inputs": {
       "lora_name": "pytorch_lora_weights.safetensors",
       "strength_model": 0.8,
-      "strength_clip": 0.5,
+      "strength_clip": 0.8,
       "model": [
         "20",
         0
@@ -382,6 +370,75 @@
     "class_type": "LoraLoader",
     "_meta": {
       "title": "Load LoRA"
+    }
+  },
+  "62": {
+    "inputs": {
+      "pad_ratio": 0.2,
+      "image": [
+        "1",
+        0
+      ],
+      "mask": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "INPAINT_CropImage",
+    "_meta": {
+      "title": "Crop Image Inpaint"
+    }
+  },
+  "63": {
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ],
+      "crop_image": [
+        "26",
+        0
+      ],
+      "rect": [
+        "62",
+        2
+      ]
+    },
+    "class_type": "INPAINT_PasteBackCropImage",
+    "_meta": {
+      "title": "Paste Back Crop Image Inpaint"
+    }
+  },
+  "69": {
+    "inputs": {
+      "original_image": [
+        "1",
+        0
+      ],
+      "image": [
+        "14",
+        0
+      ],
+      "rect": [
+        "62",
+        2
+      ]
+    },
+    "class_type": "CropImageByRect",
+    "_meta": {
+      "title": "Crop Image by Rect"
+    }
+  },
+  "74": {
+    "inputs": {
+      "images": [
+        "63",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "SaveImageWebsocket"
     }
   }
 }

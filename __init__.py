@@ -28,6 +28,9 @@ NODE_CLASS_MAPPINGS = {
     "ImagePostprocess": nodes.ImagePostprocess,
     "INPAINT_LoadModel": nodes.LoadModel,
     "INPAINT_InpaintingWithModel": nodes.InpaintingWithModel,
+    "INPAINT_CropImage": nodes.CropImage,
+    "INPAINT_PasteBackCropImage": nodes.PasteBackCropImage,
+    "CropImageByRect": nodes.CropImageByRect,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "INPAINT_VAEEncode": "VAE Encode Inpaint",
@@ -37,4 +40,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ImagePostprocess": "ImagePostprocess Inpaint",
     "INPAINT_LoadModel": "Load Model Inpaint",
     "INPAINT_InpaintingWithModel": "Inpainting (using Model)",
+    "INPAINT_CropImage": "Crop Image Inpaint", 
+    "INPAINT_PasteBackCropImage": "Paste Back Crop Image Inpaint", 
+    "CropImageByRect": "Crop Image by Rect",
 }
